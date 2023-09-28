@@ -95,7 +95,6 @@ class QuestionDetail(RetrieveDestroyAPIView):
     
     
 class QuestionVotes(APIView):
-    permission_classes = [IsAuthenticated]
 
     def post(self,request,pk):
         user = request.user

@@ -40,3 +40,4 @@ class CreateAnnouncmentSerilizer(serializers.Serializer):
         announcement = user.announcement_set.create(course = course, text = text, image = image)
         print(announcement.image)
         return announcement
+
