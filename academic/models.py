@@ -26,6 +26,10 @@ class Location(models.Model):
     description = models.TextField()
     def __str__(self):
         return self.name
+    
+    class Meta:
+        default_permissions = ["add","delete","view","change"]
+    
 
 
 

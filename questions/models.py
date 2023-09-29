@@ -51,5 +51,10 @@ class Vote(models.Model):
     question = models.ForeignKey(Question,on_delete=models.CASCADE,null= True)
     answer = models.ForeignKey(Answer,on_delete=models.CASCADE,null= True)
 
+    class Meta:
+        default_permissions = ["add","delete"]
+
+    
+
 
 # Create your models here.

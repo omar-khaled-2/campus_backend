@@ -43,14 +43,24 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     REQUIRED_FIELDS = ['first_name','last_name']
     USERNAME_FIELD = 'email'
+
+
+    @property
+    def is_staff(self):
+       return self.has_perm("can_access_admin_site")
     
     def __str__(self):
         return self.first_name
     
 
+    
+
 class GoogleUser(models.Model):
     user = models.OneToOneField("User",on_delete= models.CASCADE)
-    google_id = models.CharField(max_length=24)
+    google_id = models.CharField(max_length=24,unique=True)
+
+    class Meta:
+        default_permissions = []
 
     
 
@@ -62,12 +72,20 @@ class Student(models.Model):
     def __str__(self):
         return self.user.first_name
     
+    class Meta:
+        default_permissions = ["add","change","delete","view"]
+    
 
 
 class StudentGroupCourse(models.Model):
     student = models.ForeignKey("Student",on_delete= models.CASCADE)
     course = models.ForeignKey("academic.Course",on_delete= models.CASCADE)
     group = models.ForeignKey("academic.Group",on_delete= models.CASCADE)
+
+    class Meta:
+        default_permissions = ["add","change","delete","view"]
+    
+
 
 
 class Teacher(models.Model):
@@ -85,6 +103,9 @@ class Teacher(models.Model):
     courses = models.ManyToManyField("academic.Course",blank=True)
     user = models.OneToOneField(User,on_delete= models.CASCADE,null=True,blank=True)
 
+    class Meta:
+        default_permissions = ["add","change","delete","view"]
+    
 
 
     
@@ -112,8 +133,15 @@ class OTP(models.Model):
         )
         
         return otp
+    
+    class Meta:
+        default_permissions = []
+    
 
 
 class DeviceToken(models.Model):
     user = models.OneToOneField("User",on_delete=models.CASCADE)
     device_token = models.CharField(max_length=200)
+    class Meta:
+        default_permissions = []
+    
