@@ -14,6 +14,8 @@ class AnnouncementList(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+
+        search_term = self.request.GET.get('search_term')
         queryset = Announcement.objects.annotate(
             like_count = Count('reaction', filter=Q(reaction__type='like')),
             dislike_count = Count('reaction', filter=Q(reaction__type='dislike')),
@@ -26,7 +28,10 @@ class AnnouncementList(ListAPIView):
             is_saved = Exists(
                 user.saved_announcements.filter(pk=OuterRef('pk'))
             )
-        )
+        ).order_by('-created_at')
+
+        if search_term != "":
+            queryset = queryset.filter(text__icontains = search_term)
         
         return queryset
     
@@ -51,7 +56,7 @@ class AnnouncementReaction(APIView):
         type = request.data['type']
         Reaction.objects.update_or_create(
             announcement_id = pk,
-            owner = user,
+            user = user,
             defaults={
                 "type":type
             }
@@ -59,7 +64,7 @@ class AnnouncementReaction(APIView):
         return Response(status=status.HTTP_201_CREATED)
     def delete(self, request,pk):
         user = request.user
-        Reaction.objects.filter(annoncement_id = pk,owner = user).delete()
+        Reaction.objects.filter(announcement_id = pk,user = user).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
 

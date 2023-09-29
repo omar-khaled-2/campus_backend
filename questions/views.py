@@ -167,7 +167,7 @@ class AnswerList(ListCreateAPIView):
 
         map = {}
         for file in files:
-            filename = default_storage.save("%s/%s_%d%s" % (uuid.uuid4().hex,Path(file.name).suffix), file)
+            filename = default_storage.save(f"{uuid.uuid4().hex}{Path(file.name).suffix}",file)
             file_url = default_storage.url(filename)
             map[file.name]  = file_url
 

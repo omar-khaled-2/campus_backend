@@ -20,13 +20,13 @@ class UserManager(BaseUserManager):
     def create_user(self,email, password=None,is_superuser = False, **extra_fields):
         print(email)
         email = self.normalize_email(email=email)
-        user = self.model(email=email,is_superuser  = is_superuser, **extra_fields,)
+        user = self.model(email=email,is_superuser = is_superuser, **extra_fields,)
         user.set_password(password)
         user.save(using=self._db)
         return user
     
     def create_superuser(self,email, password=None, **extra_fields):
-        return self.create_user(email=email, password = password,is_superuser = True,is_staff = True, **extra_fields)
+        return self.create_user(email=email, password = password,is_superuser = True, **extra_fields)
 
 
 

@@ -9,20 +9,20 @@ import json
 
 @receiver(post_save, sender=Announcement)
 def announcement_created_handler(sender, instance, **kwargs):
-    payload = {
-        "announcement_id" : instance.id
-    }
+    # payload = {
+    #     "announcement_id" : instance.id
+    # }
 
-    print(payload);
+    # print(payload);
 
-    lambda_client = boto3.client('lambda',region_name='eu-west-3')
+    # lambda_client = boto3.client('lambda',region_name='eu-west-3')
 
-    response = lambda_client.invoke(FunctionName='serverless-notifications-dev-announcements',Payload=json.dumps(payload))
+    # response = lambda_client.invoke(FunctionName='serverless-notifications-dev-announcements',Payload=json.dumps(payload))
 
-    result = response['Payload'].read()
+    # result = response['Payload'].read()
 
 
-    print(result)
+    # print(result)
 
     print(instance.id)
 

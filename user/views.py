@@ -29,6 +29,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from jwt import encode,decode
 import datetime
 from .models import OTP,GoogleUser,DeviceToken,StudentGroupCourse,Student
+from django.db import IntegrityError
 
 
 from rest_framework.generics import CreateAPIView,UpdateAPIView,DestroyAPIView,ListAPIView
@@ -65,12 +66,12 @@ class GoogleAccountNotFound(APIException):
 class TokenObtain(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+
     def post(self, request):
+
         serilizer = SignInSerilizer(data = request.data)
         serilizer.is_valid(raise_exception=True)
     
-        print(serilizer.validated_data)
-
         try:
             user = get_user_model().objects.get(email = serilizer.validated_data['email'])
 
@@ -103,7 +104,7 @@ class Register(APIView):
 
 
 
-        user = get_user_model().objects.create_user(first_name,last_name,email,password)
+        user = get_user_model().objects.create_user(first_name = first_name,last_name = last_name,email = email,password = password)
 
         print(user)
     
@@ -121,10 +122,9 @@ class LinkGoogle(APIView):
     def post(self,request):
         google_id = request.data['google_id']
         user = request.user
-
         GoogleUser.objects.create(user = user,google_id = google_id)
-
         return Response(status= status.HTTP_201_CREATED)
+
     
     def delete(self,request):
   
@@ -155,15 +155,16 @@ class GoogleLogin(APIView):
     def post(self,request):
         try:
             google_id = request.data['google_id']
+            print(GoogleUser.objects.filter(google_id = google_id))
             googleUser = GoogleUser.objects.get(google_id = google_id)
             token = get_token(googleUser.user);
             response_data = {
                 'token': token,
             }
             return Response(response_data,status= status.HTTP_201_CREATED)
-        except ObjectDoesNotExist:
+        except GoogleUser.DoesNotExist:
             raise GoogleAccountNotFound()
-
+        
 class UserDetail(APIView):
     def get(self,request):
         user = request.user

@@ -8,7 +8,7 @@ from campus_admin.views import campusAdminSite
 from django.contrib import admin
 
 class UserAdmin(admin.ModelAdmin):
-    exclude = ['password',"last_login",'is_superuser']
+    exclude = ['password',"last_login"]
     list_display = ['id','first_name','last_name']
     search_fields = ['id']
 
