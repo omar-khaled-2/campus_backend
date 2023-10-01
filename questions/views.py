@@ -35,7 +35,7 @@ class QuestionList(ListAPIView):
         if(course_code):
             queryset = queryset.filter(course_id = course_code)
         else:
-            queryset = queryset.filter(course__in = Course.objects.filter(studentgroupcourse__student=user.student))
+            queryset = queryset.filter(course__in = Course.objects.filter(studentgroupcourse__student__user=user))
         queryset.order_by(sort)
         return queryset
     

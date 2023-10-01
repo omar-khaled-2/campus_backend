@@ -28,7 +28,7 @@ class AnnouncementList(ListAPIView):
             is_saved = Exists(
                 user.saved_announcements.filter(pk=OuterRef('pk'))
             )
-        ).order_by('-created_at')
+        ).filter(course__in = Course.objects.filter(studentgroupcourse__student__user=user)).order_by('-created_at')
 
         if search_term != "":
             queryset = queryset.filter(text__icontains = search_term)
