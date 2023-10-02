@@ -21,7 +21,7 @@ class AnnouncementSerializer(serializers.Serializer):
 
     
 class CreateAnnouncmentSerilizer(serializers.Serializer):
-    text = serializers.CharField(min_length = 20,max_length = 200)
+    text = serializers.CharField(min_length = 20,max_length = 1000)
     image = serializers.ImageField(allow_null = True)
     course_code = serializers.CharField()
 

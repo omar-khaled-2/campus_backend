@@ -5,7 +5,7 @@ from campus.models import AutoNameImageField
 
 
 class Announcement(models.Model):
-    text = models.CharField(max_length=300)
+    text = models.TextField(max_length=1000)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     image = AutoNameImageField(null= True,upload_to="announcements/")
     course = models.ForeignKey("academic.Course",on_delete=models.CASCADE)
