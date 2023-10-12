@@ -24,6 +24,7 @@ class DetailedQuestionSerilizer(QuestionSerializer):
     body = serializers.CharField()
     user_vote = serializers.CharField(allow_null = True)
     is_saved = serializers.BooleanField()
+    is_notifications_active = serializers.BooleanField()
 
 class AnswerSerializer(serializers.Serializer):
     id = serializers.IntegerField()

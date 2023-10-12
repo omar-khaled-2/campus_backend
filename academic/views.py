@@ -10,8 +10,8 @@ from rest_framework.permissions import AllowAny
 from user.models import Student,StudentGroupCourse
 
 class CourseList(ListAPIView):
-    permission_classes = [AllowAny]
     pagination_class = None
+    
     
     def get_queryset(self):
         user = self.request.user
@@ -24,8 +24,6 @@ class CourseList(ListAPIView):
 
 
 class ScheduleList(APIView):
- 
-
     def get(self,request):
         user = request.user
         date  = self.request.query_params.get('date')

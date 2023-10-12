@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
-from .models import User,Student,Teacher
+from .models import User,Student,Teacher,Device,StudentGroupCourse
 from campus_admin.views import campusAdminSite
 from django.contrib import admin
 
@@ -22,5 +22,7 @@ campusAdminSite.register(Student)
 campusAdminSite.register(Teacher)
 campusAdminSite.register(Group)
 campusAdminSite.register(Permission)
+campusAdminSite.register(Device)
+campusAdminSite.register(StudentGroupCourse)
 
 

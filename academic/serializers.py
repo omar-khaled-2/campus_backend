@@ -21,7 +21,6 @@ class CourseSerializer(serializers.Serializer):
 class GroupSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
-    # is_enrolled = serializers.BooleanField()
 
 class CourseWithGroupsSerializer(CourseSerializer):
     enrolled_group_id = serializers.IntegerField(allow_null = True)

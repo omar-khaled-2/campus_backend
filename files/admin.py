@@ -1,5 +1,5 @@
 from campus_admin.views import campusAdminSite
-from .models import File,Folder
+from .models import File,Folder,Notification
 from django.contrib import admin
 # Register your models here.
 
@@ -14,3 +14,6 @@ class FileAdmin(admin.ModelAdmin):
 
 campusAdminSite.register(File,FileAdmin)
 campusAdminSite.register(Folder,FolderAdmin)
+
+
+

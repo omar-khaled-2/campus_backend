@@ -10,12 +10,24 @@ class Assignment(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+        
+    class Meta:
+        default_permissions = ["add","delete","view","change"]
+    
+
     
 
 class Submission(models.Model):
     assignment = models.ForeignKey(Assignment,on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+        
+    class Meta:
+        default_permissions = ["add","delete","view","change"]
+    
+
     
 
 
@@ -32,6 +44,12 @@ class Question(models.Model):
     title = models.CharField()
     type = models.CharField(choices=QuestionTypes.choices)
     assignment = models.ForeignKey(Assignment,on_delete=models.CASCADE)
+
+        
+    class Meta:
+        default_permissions = []
+    
+
     
 
 
@@ -41,6 +59,12 @@ class Option(models.Model):
     text = models.CharField()
     question = models.ForeignKey(Question,on_delete=models.CASCADE)
 
+        
+    class Meta:
+        default_permissions = []
+    
+
+
 
 class Answer(models.Model):
 
@@ -48,9 +72,13 @@ class Answer(models.Model):
     option = models.ForeignKey(Option,on_delete=models.CASCADE)
     question = models.ForeignKey(Question,on_delete=models.CASCADE)
     
+        
+    class Meta:
+        default_permissions = []
+    
     
 
-class Files(models.Model):
+class File(models.Model):
     file = models.FileField()
     answer = models.ForeignKey(Answer,on_delete=models.CASCADE)
 

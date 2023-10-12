@@ -14,9 +14,12 @@ class Course(models.Model):
     prerequisite = models.ManyToManyField("Course",blank=True)
     def __str__(self):
         return self.english_name
-    
+
     class Meta:
         default_permissions = ["add","delete","view","change"]
+        permissions = [("view_own_courses","can view own courses"),("enroll_course","can enroll course"),("unenroll_course","can_unenroll_course")]
+
+    
 
 
 class Location(models.Model):
@@ -29,6 +32,7 @@ class Location(models.Model):
     
     class Meta:
         default_permissions = ["add","delete","view","change"]
+        
     
 
 
@@ -38,6 +42,8 @@ class CourseGPA(models.Model):
     course = models.ForeignKey('Course',on_delete=models.CASCADE,null=False)
     term = models.ForeignKey("Term",on_delete=models.CASCADE,null=False)
 
+    class Meta:
+        default_permissions = []
 
 
 
@@ -48,6 +54,11 @@ class Period(models.Model):
 
     def __str__(self) -> str:
         return "Period {}".format(self.id)
+
+    class Meta:
+        default_permissions = ["add","delete","change"]
+
+
 
 
 
@@ -71,6 +82,13 @@ class Activity(models.Model):
     course = models.ForeignKey("Course",on_delete=models.CASCADE,null=False)
     instructor = models.ForeignKey("user.Teacher",on_delete=models.CASCADE,null=False)
 
+    
+    class Meta:
+        default_permissions = ["add","delete","view","change"]
+    
+
+
+
 
 
 
@@ -87,6 +105,12 @@ class Group(models.Model):
     def __str__(self) -> str:
         return f"{self.course.english_name} - {self.name}"
 
+        
+    class Meta:
+        default_permissions = ["add","delete","change"]
+    
+
+
 
 class Schedule(models.Model):
     activity = models.ForeignKey("Activity",on_delete=models.CASCADE,null=False)
@@ -95,3 +119,7 @@ class Schedule(models.Model):
     location = models.ForeignKey("Location",on_delete=models.CASCADE,null=False)
     groups = models.ManyToManyField("Group",blank=False)
     date = models.DateField(null=False)
+        
+    class Meta:
+        default_permissions = ["add","delete","change"]
+    

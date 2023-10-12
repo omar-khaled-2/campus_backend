@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from academic.models import Course
 from .models import Folder
-
+from user.serializers import UserSerializer
 
 
 class FileSerilizer(serializers.Serializer):
@@ -19,6 +19,10 @@ class FolderSerilizer(serializers.Serializer):
     file_count = serializers.IntegerField(default = 0)
 
 
+
+class DetailedFolderSerilizer(FolderSerilizer):
+    is_notifications_active = serializers.BooleanField()
+    owner = UserSerializer(allow_null = True)
 
 
 class CreateRootFolderSerilizer(serializers.Serializer):

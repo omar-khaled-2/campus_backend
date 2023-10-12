@@ -7,7 +7,7 @@ from rest_framework.exceptions import PermissionDenied,NotFound
 from rest_framework.views import APIView
 from django.db.models import Subquery, OuterRef,Count,Q,Exists
 from django.db.models.functions import JSONObject
-from .models import Question,Answer,Vote
+from .models import Question,Answer,Vote,Notification
 from .serializers import QuestionSerializer,AnswerSerializer,DetailedQuestionSerilizer
 import json
 from academic.models import Course
@@ -48,23 +48,26 @@ class QuestionList(ListAPIView):
         course_code = request.data['course_code']
         files = request.FILES.getlist('files')
         user = request.user
-        course = Course.objects.get(code = course_code)
-        map = {}
-        for file in files:
-            filename = default_storage.save(f"{uuid.uuid4().hex}{Path(file.name).suffix}",file)
-            file_url = default_storage.url(filename)
-    
-            map[file.name]  = file_url
-        for item in body:
-            if "insert" in item:
-                if "image" in item["insert"]:
-                    item["insert"]['image'] = map[item['insert']['image']]
-                elif "audio" in item["insert"]:
-                    item['insert']['audio'] = map[item['insert']['audio']]
+        print(type(course_code))
+        try:
+            course = Course.objects.get(code = course_code)
+            map = {}
+            for file in files:
+                filename = default_storage.save(f"{uuid.uuid4().hex}{Path(file.name).suffix}",file)
+                file_url = default_storage.url(filename)
+        
+                map[file.name]  = file_url
+            for item in body:
+                if "insert" in item:
+                    if "image" in item["insert"]:
+                        item["insert"]['image'] = map[item['insert']['image']]
+                    elif "audio" in item["insert"]:
+                        item['insert']['audio'] = map[item['insert']['audio']]
 
-        question = Question.objects.create(title = title,owner = user,body = json.dumps(body),course = course)
-        return Response({"id":question.id},status=status.HTTP_201_CREATED)
-    
+            question = Question.objects.create(title = title,owner = user,body = json.dumps(body),course = course)
+            return Response({"id":question.id},status=status.HTTP_201_CREATED)
+        except Course.DoesNotExist:
+            raise NotFound("Course does not exist")
 
 
 class QuestionDetail(RetrieveDestroyAPIView):
@@ -77,6 +80,7 @@ class QuestionDetail(RetrieveDestroyAPIView):
             user_vote = Subquery(Vote.objects.filter(question_id=OuterRef("pk"),owner = user).values("type")[:1]),
             answer_count = Count("answer"),
             view_count = Count("viewer"),
+            is_notifications_active = Exists(Notification.objects.filter(user = user,question = OuterRef("pk"))),
             is_saved = Exists(user.saved_questions.filter(id = OuterRef("pk"))),
         )
 
@@ -90,7 +94,8 @@ class QuestionDetail(RetrieveDestroyAPIView):
     
     def destroy(self, request, *args, **kwargs):
         user = request.user
-        print(user)
+        if not user.has_perm("questions.delete_question"):
+            raise PermissionDenied()
         return super().destroy(request, *args, **kwargs)
     
     
@@ -210,4 +215,18 @@ class DetailedAnswer(APIView):
             raise NotFound()
 
 
-       
+class AnswerApproved(APIView):
+    def put(self, request,question_id,answer_id):
+        user = request.user
+        if not user.has_perm("question.approve_answer"):
+            raise PermissionDenied
+        try:
+            answer = Answer.objects.get(pk = answer_id,question_id = question_id)
+        
+            if(user != answer.owner):
+                raise PermissionDenied()
+            answer.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Answer.DoesNotExist:
+            raise NotFound()

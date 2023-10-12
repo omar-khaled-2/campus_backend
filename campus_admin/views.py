@@ -6,8 +6,10 @@ from django.conf import settings
 import json
 
 class CampusAdminSite(AdminSite):
-    site_title = gettext_lazy("Campus amin")
+    site_title = gettext_lazy("Campus admin")
     site_header = gettext_lazy("Campus administration")
+
+    
     
     
 

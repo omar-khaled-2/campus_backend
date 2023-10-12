@@ -26,9 +26,12 @@ class CertainLengthValidator:
         if(len(value) != self.length):
             raise serializers.ValidationError("This field length must be %s" % self.length)
 
-class EmailSerilizer(serializers.Serializer):
+class EmailUniqueSerilizer(serializers.Serializer):
     email = serializers.EmailField(validators = [EmailUniqueValidator()])
 
+
+class ChangeEmailSerializer(EmailUniqueSerilizer):
+    otp = serializers.CharField()
 
 class NameSerilizer(serializers.Serializer):
     first_name = serializers.CharField(min_length = 3,max_length = 10)
@@ -91,3 +94,6 @@ class OTPSerilizer(serializers.Serializer):
 
 class ChangeProfilePicSerializer(serializers.Serializer):
     profile_pic = serializers.ImageField()
+
+class PasswordSerilizer(serializers.Serializer):
+    password = serializers.CharField()

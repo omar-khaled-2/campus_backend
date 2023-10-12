@@ -20,9 +20,7 @@ class AnnouncementForm(forms.ModelForm):
 class AnnouncementAdmin(admin.ModelAdmin):
     readonly_fields = ['owner']
     form = AnnouncementForm
-
     search_fields = ['text']
-
     list_display = ['id','owner','created_at']
     def save_model(self, request, obj, form, change):
         if not change:  # Only set owner for new instances

@@ -139,9 +139,10 @@ class OTP(models.Model):
     
 
 
-class DeviceToken(models.Model):
-    user = models.OneToOneField("User",on_delete=models.CASCADE)
-    device_token = models.CharField(max_length=200)
+class Device(models.Model):
+    user = models.ForeignKey("User",on_delete=models.CASCADE)
+    platform = models.CharField(null=False,blank=False,max_length=10)
+    token = models.CharField(max_length=255,null=False,blank=False)
+
     class Meta:
         default_permissions = []
-    

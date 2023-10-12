@@ -8,23 +8,41 @@ import json
 
 
 @receiver(post_save, sender=Announcement)
-def announcement_created_handler(sender, instance, **kwargs):
-    # payload = {
-    #     "announcement_id" : instance.id
-    # }
-
-    # print(payload);
-
-    # lambda_client = boto3.client('lambda',region_name='eu-west-3')
-
-    # response = lambda_client.invoke(FunctionName='serverless-notifications-dev-announcements',Payload=json.dumps(payload))
-
-    # result = response['Payload'].read()
+def send_notification(sender, instance,created, **kwargs):
+    if not created:
+        return
+    sns_client = boto3.client('sns')
+    topic_name = f"course-{instance.course_id}"
+    print(f"arn:aws:sns:eu-west-3:448969029695:{topic_name}")
 
 
-    # print(result)
+    message = json.dumps({
+        "default": 'New Announcement Alert!',
+        "GCM": json.dumps({
+            "notification": {
+                "title": 'New Announcement Alert!',
+                "body": instance.text
+            }
+        }),
+        "APNS": json.dumps({
+            "aps": {
+                "alert": {
+                    "title": 'New Announcement Alert!',
+                    "body": instance.text
+                }
+            }
+        })
+    })
 
-    print(instance.id)
+    print(message)
+
+    sns_client.publish(
+        TopicArn=f"arn:aws:sns:eu-west-3:448969029695:{topic_name}",
+        Message=message,
+        MessageStructure = 'json'
+    )
+    sns_client.close()
+
 
 
 
@@ -32,4 +50,4 @@ def announcement_created_handler(sender, instance, **kwargs):
 def announcement_deleted_handler(sender, instance, **kwargs):
     if(instance.image):
         instance.image.delete()
-
+    

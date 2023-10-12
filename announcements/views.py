@@ -37,6 +37,8 @@ class AnnouncementList(ListAPIView):
     
     def post(self,request):
         user = request.user
+        if not user.has_perm("announcements.add_announcement"):
+            raise PermissionDenied()
         serilizer = CreateAnnouncmentSerilizer(data= request.data)
         serilizer.is_valid(raise_exception=True)
 
@@ -53,6 +55,8 @@ class AnnouncementReaction(APIView):
   
     def post(self,request,pk):
         user = request.user
+        if not user.has_perm('announcements.react_annoucements'):
+            raise PermissionDenied()
         type = request.data['type']
         Reaction.objects.update_or_create(
             announcement_id = pk,

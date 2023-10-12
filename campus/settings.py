@@ -31,12 +31,14 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = 'media/'
 
-
+APNS_ARN = "arn:aws:sns:eu-west-3:448969029695:app/APNS/campus"
+FCM_ARN = "arn:aws:sns:eu-west-3:448969029695:app/GCM/campus"
 
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 
-if config("AWS_STORAGE_BUCKET_NAME"):
+try:
+    
     AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME")
     AWS_QUERYSTRING_AUTH = False
@@ -44,12 +46,12 @@ if config("AWS_STORAGE_BUCKET_NAME"):
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {"BACKEND": "storages.backends.s3boto3.S3StaticStorage"}
     }
-
-else :
+except:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
         "staticfiles": {"BACKEND": "django.core.files.storage.FileSystemStorage"}
     }
+
 
 
 
@@ -63,8 +65,10 @@ STATIC_ROOT = BASE_DIR / "static"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-$esez%0wzbts7!$2wyyga7!h!k+5d+pc3_4f8)y1$6v444%o^n'
 
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -209,12 +213,12 @@ REST_FRAMEWORK = {
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'campus.alexandria@gmail.com'
-EMAIL_HOST_PASSWORD = 'uwzsnsddbmbzzhch'
+# EMAIL_HOST_PASSWORD = 'uwzsnsddbmbzzhch'
 
 
 

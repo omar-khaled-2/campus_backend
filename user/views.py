@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .serializers import UserSerializer,SignUpSerilizer,ForgotPasswordSerializer,ResetPasswordSerializer,EmailSerilizer,OTPSerilizer,ChangePasswordSerializer,ChangeProfilePicSerializer,SignInSerilizer,NameSerilizer
+from .serializers import UserSerializer,SignUpSerilizer,ForgotPasswordSerializer,ResetPasswordSerializer,ChangePasswordSerializer,ChangeProfilePicSerializer,SignInSerilizer,NameSerilizer,EmailUniqueSerilizer,ChangeEmailSerializer,PasswordSerilizer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import status
@@ -28,8 +28,9 @@ from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from jwt import encode,decode
 import datetime
-from .models import OTP,GoogleUser,DeviceToken,StudentGroupCourse,Student
+from .models import OTP,GoogleUser,Device,StudentGroupCourse,Student
 from django.db import IntegrityError
+import boto3
 
 
 from rest_framework.generics import CreateAPIView,UpdateAPIView,DestroyAPIView,ListAPIView
@@ -53,7 +54,7 @@ class PasswordInvalid(APIException):
     status_code = 400
     default_detail = "Password invalid"
 
-class OTPINVALID(APIException):
+class OTPInvalid(APIException):
     status_code = 400
     default_detail = "Invalid OTP"
 
@@ -170,7 +171,7 @@ class UserDetail(APIView):
         user = request.user
         permissions = user.get_all_permissions()
         serializer = UserSerializer(instance = request.user)
-        return Response({"user":serializer.data,"permissions":permissions},status=status.HTTP_200_OK)
+        return Response(serializer.data,status=status.HTTP_200_OK)
     
     def put(self,request):
         serilizer = NameSerilizer(data=request.data)
@@ -185,12 +186,22 @@ class UserDetail(APIView):
     
     def delete(self,request):
         user = request.user
-        password = request.data['password']
+        serilizer = PasswordSerilizer(data = request.data)
+        serilizer.is_valid(raise_exception=True)
+        password = serilizer.validated_data['password']
         password_match = user.check_password(password)
         if not password_match:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            raise PasswordInvalid()
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserPermissions(APIView):
+
+    def get(self,request):
+        user = request.user
+        permissions = user.get_all_permissions()
+        return Response(permissions,status=status.HTTP_200_OK)
 
     
        
@@ -210,61 +221,39 @@ class UserPassword(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class EmailCheck(APIView):
-    def post(self, request):
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ChangeEmailGenerateOTP(APIView):
-    permission_classes = [IsAuthenticated]
+class ValidateEmail(APIView):
     def post(self,request):
-        serializer = EmailSerilizer(data=request.data)
+        print(request.data)
+        serializer = EmailUniqueSerilizer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = request.user
-        otp = OTP.generate(user=user)
-    
-        send_mail(
-            'One-Time Password (OTP) for Email Change Request',
-            f''''
-                Dear {user.first_name},
+        return Response(status=status.HTTP_200_OK)
 
-                    We have received a request to change the email associated with your account. To ensure the security of your account, we require you to verify your identity using a One-Time Password (OTP).
-
-                    Please find below your OTP for email change:
-
-                    OTP: {otp.secret}
-
-                    Please note that this OTP is valid for [Insert Time Limit, e.g., 15 minutes] minutes. If you did not initiate this request or believe it to be unauthorized, please contact our support team immediately at .
-
-                    If you did not make this request, it is essential to secure your account promptly. Do not share this OTP with anyone.
-
-                    Thank you for using our services and helping us maintain the security of your account.
-
-                Best regards,
-                Sphinx''',
-            settings.EMAIL_HOST_USER,
-            [user.email],
-        )
-        serilizer = OTPSerilizer(otp)
-
-   
-        return Response(serilizer.data,status=status.HTTP_201_CREATED)
 
 
 class ChangeEmail(APIView):
-    permission_classes = [IsAuthenticated]
+    
     def put(self,request):
         user = request.user
-        secret = request.data['otp']
-        email = request.data['email']
-        otp = OTP.objects.get(user = user)
-        if otp.secret != secret:
-            raise OTPINVALID()
-        user.email = email
-        user.save()
-        return Response(status=status.HTTP_202_ACCEPTED)
+        serilizer = ChangeEmailSerializer(data = request.data)
+        serilizer.is_valid(raise_exception=True)
+        secret = serilizer.validated_data['otp']
+        email = serilizer.validated_data['email']
+        try:
+            otp = OTP.objects.get(user = user)
+            if otp.secret != secret:
+                raise OTPInvalid()
+            user.email = email
+            user.save()
+            return Response(status=status.HTTP_202_ACCEPTED)
+        except OTP.DoesNotExist:
+            raise NotFound("OTP does not exist")
 
+class GenerateOtp(APIView):
+    def post(self,request):
+        user = request.user
+        otp = OTP.generate(user = user)
+        return Response(otp.secret,status=status.HTTP_201_CREATED)
 
 
 class StudentCourses(ListAPIView):
@@ -425,9 +414,16 @@ class ResetPassword(APIView):
         return Response()
     
 
-class DeviceTokenDetail(APIView):
+class DeviceDetail(APIView):
     def put(self,request):
         device_token = request.data['device_token']
         user = request.user
-        DeviceToken.objects.update_or_create({'device_token':device_token},user=user)
+        platform = request.META["HTTP_PLATFORM"]
+        
+        Device.objects.get_or_create(token=device_token,user=user,platform=platform)
+        return Response(status=status.HTTP_200_OK)
+    
+    def delete(self,request):
+        device_token = request.data['device_token']
+        Device.objects.get(token=device_token).delete()
         return Response(status=status.HTTP_200_OK)
